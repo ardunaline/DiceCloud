@@ -1,27 +1,31 @@
-FROM ubuntu:jammy
+FROM node:14-buster AS builder
 
-USER root
-RUN adduser --system mt
+RUN curl https://install.meteor.com/ | sed 's/^RELEASE=.*/RELEASE="2.16"/' | sh
 
-RUN apt-get update
-RUN apt-get install --quiet --yes curl
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
-RUN apt-get update
-RUN apt-get install --quiet --yes nodejs git
+WORKDIR /app
+COPY app/.meteor app/.meteor
+COPY app/package.json app/package-lock.json ./
+RUN meteor npm install
 
-USER mt
+COPY app/ .
+RUN meteor build --directory /bundle --server-only
 
-RUN curl https://install.meteor.com/ | sh
+FROM node:14-buster-slim
 
-WORKDIR /home/mt
-RUN git clone https://github.com/ardunaline/DiceCloud dicecloud
-WORKDIR /home/mt/dicecloud/app
-RUN npm install --production
-ENV PATH=$PATH:/home/mt/.meteor
-RUN meteor build --directory ~/dc/ --architecture os.linux.x86_64
-WORKDIR /home/mt/dc/bundle/programs/server
-RUN npm install
-WORKDIR /home/mt/dc/bundle
-RUN rm -r /home/mt/dicecloud
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    dumb-init ca-certificates python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT node main.js
+WORKDIR /app
+
+COPY --from=builder /bundle/bundle .
+RUN cd programs/server && npm install --production && npm prune --production \
+  && apt-get purge -y python3 make g++ \
+  && apt-get autoremove -y \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV PORT=3000
+EXPOSE 3000
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "main.js"]

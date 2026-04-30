@@ -1,4 +1,4 @@
-node_modules
+app/node_modules
 .git
 .gitignore
 .cordova
@@ -10,3 +10,4 @@ build
 tests
 coverage
 .npm
+.claude
