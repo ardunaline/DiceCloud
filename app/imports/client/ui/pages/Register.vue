@@ -77,15 +77,17 @@
       </div>
       <v-btn
         color="accent"
+        class="ma-2"
         @click="googleLogin"
       >
-        Register in with Google
+        Register with Google
       </v-btn>
       <div class="error--text">
         {{ discordError }}
       </div>
       <v-btn
         color="accent"
+        class="ma-2"
         @click="discordLogin"
       >
         Register with Discord
