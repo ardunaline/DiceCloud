@@ -13,6 +13,8 @@ COPY app/.meteor app/.meteor
 COPY app/package.json app/package-lock.json ./
 RUN meteor npm install
 
+ENV METEOR_ALLOW_SUPERUSER=true
+
 COPY app/ .
 RUN meteor build --directory /bundle --server-only
 
