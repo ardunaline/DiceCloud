@@ -9,6 +9,7 @@ import '/imports/server/config/redisCaching';
 import '/imports/server/publications/index';
 import '/imports/server/cron/deleteSoftRemovedDocuments';
 import '/imports/api/parenting/organizeMethods';
+import '/imports/server/config/discordConfig';
 import '/imports/api/users/patreon/updatePatreonOnLogin';
 import '/imports/migrations/server/index';
 import '/imports/migrations/methods/index'

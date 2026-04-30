@@ -1,7 +1,13 @@
 {
   "public": {
     "environment": "production",
+    "discord": {
+      "clientId": "1499386985822027878"
+    },
     "disablePatreon": true,
     "disallowCreatureApiImport": false
+  },
+  "discord": {
+    "clientSecret": "d8N5sGhLnRTRGagCqV6kvYg_aOy3uI8D"
   }
 }

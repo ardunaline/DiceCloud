@@ -96,6 +96,16 @@
       >
         Sign in with Patreon
       </v-btn>
+      <div class="error--text">
+        {{ discordError }}
+      </div>
+      <v-btn
+        color="accent"
+        class="ma-2"
+        @click="discordLogin"
+      >
+        Sign in with Discord
+      </v-btn>
     </v-layout>
   </div>
 </template>
@@ -115,6 +125,7 @@ export default {
     error: '',
     googleError: '',
     patreonError: '',
+    discordError: '',
   }),
   methods: {
     submit() {
@@ -143,6 +154,16 @@ export default {
         if (error) {
           console.error(error);
           this.patreonError = error.message;
+        } else {
+          this.$router.push(this.$route.query.redirect || 'characterList');
+        }
+      });
+    },
+    discordLogin() {
+      Meteor.loginWithDiscord(error => {
+        if (error) {
+          console.error(error);
+          this.discordError = error.message;
         } else {
           this.$router.push(this.$route.query.redirect || 'characterList');
         }

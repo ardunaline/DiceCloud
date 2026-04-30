@@ -81,6 +81,15 @@
       >
         Register in with Google
       </v-btn>
+      <div class="error--text">
+        {{ discordError }}
+      </div>
+      <v-btn
+        color="accent"
+        @click="discordLogin"
+      >
+        Register with Discord
+      </v-btn>
     </v-layout>
   </div>
 </template>
@@ -110,6 +119,7 @@
         ],
         error: '',
         googleError: '',
+        discordError: '',
       }
     },
     methods: {
@@ -131,6 +141,11 @@
       googleLogin() {
         Meteor.loginWithGoogle(error => {
           if (error) this.googleError = error.reason;
+        });
+      },
+      discordLogin() {
+        Meteor.loginWithDiscord(error => {
+          if (error) this.discordError = error.reason;
         });
       },
     },
