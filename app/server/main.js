@@ -1,4 +1,5 @@
 import '/imports/api/simpleSchemaConfig';
+import '/imports/server/importLibraries';
 import '/imports/server/config/SimpleRestConfig';
 import '/imports/server/config/limitLoginTokens';
 import '/imports/server/rest/index';
