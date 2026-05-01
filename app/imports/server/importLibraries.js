@@ -45,10 +45,8 @@ Meteor.methods({
       idMap[oldId] = newId;
       newNode._id = newId;
 
-      // Remap root
-      if (newNode.root && newNode.root.id === library._id) {
-        newNode.root = { collection: 'libraries', id: newLibId };
-      }
+      // Always overwrite root to point to the new local library
+      newNode.root = { collection: 'libraries', id: newLibId };
 
       // Remap ancestors
       if (newNode.ancestors) {
