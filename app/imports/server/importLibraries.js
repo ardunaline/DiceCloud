@@ -33,9 +33,14 @@ Meteor.methods({
 
     // Insert all nodes with new IDs
     let nodesInserted = 0;
+    const errors = [];
     for (const node of nodes) {
       const newNode = { ...node };
-      const oldId = newNode._id;
+      const oldId = newNode._id || node._id;
+      if (!oldId) {
+        errors.push('node missing _id: ' + JSON.stringify(node).substring(0, 100));
+        continue;
+      }
       const newId = Random.id(32);
       idMap[oldId] = newId;
       newNode._id = newId;
@@ -57,7 +62,9 @@ Meteor.methods({
         LibraryNodes.insert(newNode);
         nodesInserted++;
       } catch (e) {
-        console.log(`  Error inserting node ${oldId}: ${e.message}`);
+        const errMsg = e.message || e.toString();
+        errors.push(`node ${oldId}: ${errMsg}`);
+        console.log(`  Error inserting node ${oldId}: ${errMsg}`);
       }
     }
 
@@ -79,7 +86,7 @@ Meteor.methods({
       }
     }
 
-    return { imported: library.name, nodes: nodesInserted };
+    return { imported: library.name, nodes: nodesInserted, errors: errors.length ? errors : undefined };
   },
 
   saveImportedLibraryCollection({ collection }) {
