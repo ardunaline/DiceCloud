@@ -1,6 +1,7 @@
-import { DDP } from 'meteor/ddp-client';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
+
+// DDP.connect is a Meteor global on the server, not available via import
 import Libraries from '/imports/api/library/Libraries';
 import LibraryNodes from '/imports/api/library/LibraryNodes';
 import LibraryCollections from '/imports/api/library/LibraryCollections';
@@ -55,25 +56,28 @@ Meteor.methods({
 
     console.log('Connecting to dicecloud.com...');
     const remote = DDP.connect('https://dicecloud.com');
+    // On server, DDP.connect may return connection directly or as { connection }
+    const conn = remote.connection || remote;
+    console.log('Connected, connection type:', typeof conn, Object.keys(conn).slice(0, 10));
 
     // Register stores to capture DDP data
     const librariesStore = new SimpleStore();
     const libraryNodesStore = new SimpleStore();
     const libraryCollectionsStore = new SimpleStore();
-    remote.connection.registerStore('libraries', librariesStore);
-    remote.connection.registerStore('libraryNodes', libraryNodesStore);
-    remote.connection.registerStore('libraryCollections', libraryCollectionsStore);
+    conn.registerStore('libraries', librariesStore);
+    conn.registerStore('libraryNodes', libraryNodesStore);
+    conn.registerStore('libraryCollections', libraryCollectionsStore);
 
     try {
       // Log in
       console.log('Logging in...');
-      await ddpLogin(remote.connection, email, password);
+      await ddpLogin(conn, email, password);
       console.log('Logged in');
 
       // Subscribe to browseLibraries
       console.log('Fetching library list...');
-      const browseSub = remote.subscribe('browseLibraries');
-      await waitForSubReady(remote.connection, browseSub);
+      const browseSub = conn.subscribe('browseLibraries');
+      await waitForSubReady(conn, browseSub);
 
       const remoteLibraries = librariesStore.all();
       const remoteCollections = libraryCollectionsStore.all();
@@ -110,8 +114,8 @@ Meteor.methods({
         }
 
         console.log(`  Fetching nodes for "${lib.name}"...`);
-        const nodesSub = remote.subscribe('libraryNodes', lib._id);
-        await waitForSubReady(remote.connection, nodesSub);
+        const nodesSub = conn.subscribe('libraryNodes', lib._id);
+        await waitForSubReady(conn, nodesSub);
 
         const nodes = libraryNodesStore.all().filter(n => n.root && n.root.id === lib._id);
         if (!nodes.length) {
@@ -192,14 +196,14 @@ Meteor.methods({
         Object.keys(libraryNodesStore.data).forEach(k => delete libraryNodesStore.data[k]);
       }
 
-      remote.disconnect();
+      conn.disconnect();
       return {
         libraries: libsCount,
         nodes: nodesCount,
         collections: collectionsCount,
       };
     } catch (e) {
-      remote.disconnect();
+      conn.disconnect();
       console.error('Import failed:', e);
       throw new Meteor.Error('import-failed', e.message || e.toString());
     }
