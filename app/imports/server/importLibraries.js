@@ -5,11 +5,13 @@ import LibraryNodes from '/imports/api/library/LibraryNodes';
 import LibraryCollections from '/imports/api/library/LibraryCollections';
 
 Meteor.methods({
-  saveImportedLibrary({ library, nodes }) {
+  saveImportedLibrary({ library, nodes, ownerId }) {
     if (!this.userId) throw new Meteor.Error('not-logged-in');
 
+    const targetOwner = ownerId || this.userId;
+
     // Check if already imported
-    const existing = Libraries.findOne({ name: library.name, owner: this.userId });
+    const existing = Libraries.findOne({ name: library.name, owner: targetOwner });
     if (existing) {
       return { skipped: library.name };
     }
@@ -20,7 +22,7 @@ Meteor.methods({
       description: library.description,
       showInMarket: true,
       public: true,
-      owner: this.userId,
+      owner: targetOwner,
       writers: [],
       readers: [],
     });
