@@ -18,8 +18,8 @@ Meteor.methods({
     const newLibId = Libraries.insert({
       name: library.name,
       description: library.description,
-      showInMarket: false,
-      public: false,
+      showInMarket: true,
+      public: true,
       owner: this.userId,
       writers: [],
       readers: [],
