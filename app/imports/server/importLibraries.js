@@ -3,6 +3,7 @@ import { Random } from 'meteor/random';
 import Libraries from '/imports/api/library/Libraries';
 import LibraryNodes from '/imports/api/library/LibraryNodes';
 import LibraryCollections from '/imports/api/library/LibraryCollections';
+import { rebuildNestedSets } from '/imports/api/parenting/parentingFunctions';
 
 function remapRef(oldRef, idMap) {
   if (!oldRef) return oldRef;
@@ -119,6 +120,11 @@ Meteor.methods({
         errors.push(`node ${oldId}: ${errMsg}`);
         console.log(`  Error inserting node ${oldId}: ${errMsg}`);
       }
+    }
+
+    // Rebuild nested set tree (left/right values) from parentId hierarchy
+    if (nodesInserted > 0) {
+      rebuildNestedSets(LibraryNodes, newLibId);
     }
 
     return { imported: library.name, nodes: nodesInserted, errors: errors.length ? errors : undefined };
