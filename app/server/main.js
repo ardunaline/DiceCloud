@@ -3,6 +3,7 @@ import '/imports/server/importLibraries.js';
 import '/imports/server/config/SimpleRestConfig.js';
 import '/imports/server/config/limitLoginTokens.js';
 import '/imports/server/rest/index.js';
+import '/imports/server/config/discordConfig.js';
 import '/imports/server/config/accountsEmailConfig.js';
 import '/imports/server/config/simpleSchemaDebug.js';
 import '/imports/server/config/SyncedCronConfig.js';
