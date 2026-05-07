@@ -1,0 +1,13 @@
+app/node_modules
+.git
+.gitignore
+.cordova
+build
+.meteor/local
+.vscode
+.idea
+*.log
+tests
+coverage
+.npm
+.claude

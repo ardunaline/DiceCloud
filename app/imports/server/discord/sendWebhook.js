@@ -1,21 +1,17 @@
 import Discord from 'discord.js'
 export default function sendWebhook({ webhookURL, data = {} }) {
-  //webhookURL = https://discordapp.com/api/webhooks/<id>/<token>
-  let urlArray = webhookURL.split('/');
+  //webhookURL = https://discord.com/api/webhooks/<id>/<token>
+  let urlArray = webhookURL.split('/').filter(Boolean);
   let token = urlArray.pop();
   let id = urlArray.pop();
 
   // prevent discord mention exploit
-  data.disableMentions = 'all';
+  data.allowedMentions = { parse: [] };
 
   const hook = new Discord.WebhookClient(id, token);
-  try {
-    // Send a message using the webhook
-    hook.send(data);
-  } catch (e) {
-    // Swallow the error, we don't really care
-    console.error(e);
-  }
+  hook.send(data).catch(e => {
+    console.error('Discord webhook failed:', e);
+  });
 }
 
 export function sendWebhookAsCreature({ creature, data = {} }) {
