@@ -1,4 +1,5 @@
 import '/imports/api/simpleSchemaConfig.js';
+import '/imports/server/importLibraries.js';
 import '/imports/server/config/SimpleRestConfig.js';
 import '/imports/server/config/limitLoginTokens.js';
 import '/imports/server/rest/index.js';
