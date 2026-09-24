@@ -1,0 +1,52 @@
+# Fly.io configuration for the DiceCloud Meteor app.
+#
+# Prerequisites:
+#   1. Install flyctl:  https://fly.io/docs/flyctl/install/
+#   2. fly auth login
+#   3. Rename `app` below to the name you create with `fly apps create`,
+#      then deploy with scripts/fly-deploy.ps1 (it injects CONTAINER_VERSION).
+#
+# Pick primary_region closest to your MongoDB Atlas cluster AND your players.
+# Example: Atlas in AWS eu-central-1 (Frankfurt)  -> use "fra"
+#          Atlas in AWS us-east-1                 -> use "iad"
+
+app = "dicecloud-ardun"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+  # CONTAINER_VERSION is passed at deploy time via --build-arg so that creature
+  # computeVersion stamps change with each deployed engine revision.
+
+[env]
+  PORT = "3000"
+  # Do NOT put secrets here. Set with:
+  #   fly secrets set MONGO_URL=... MONGO_OPLOG_URL=... ROOT_URL=https://dice.ardun.me
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Keep one machine always running — avoids the Render free-tier style cold
+  # starts (we measured 22-30s wake-up on Render when the instance sleeps).
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 200
+    hard_limit = 250
+
+  # Meteor answers this endpoint without auth; it proves the app is up.
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "60s"
+    method = "GET"
+    path = "/sockjs/info"
+
+[[vm]]
+  # Meteor is memory hungry; 1 GB is the safe floor for a small instance.
+  size = "shared-cpu-1x"
+  memory = "1gb"

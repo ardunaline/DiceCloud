@@ -1,6 +1,7 @@
 import CreatureVariables from '/imports/api/creature/creatures/CreatureVariables.js';
 import Creatures from '/imports/api/creature/creatures/Creatures.js';
 import { EJSON } from 'meteor/ejson';
+import VERSION from '/imports/constants/VERSION.js';
 
 export default function writeScope(creatureId, computation) {
   if (!creatureId) throw 'creatureId is required';
@@ -61,6 +62,12 @@ export default function writeScope(creatureId, computation) {
   if (computation.creature?.dirty) {
     Creatures.update({ _id: creatureId }, { $unset: { dirty: 1 } });
   }
+  // Stamp the engine version that computed this creature, so that the
+  // singleCharacter publication doesn't recompute it on every subscription
+  // until the computation engine actually changes
+  Creatures.update({ _id: creatureId }, {
+    $set: { computeVersion: VERSION },
+  });
 }
 /*
 function calculateSize(computation) {

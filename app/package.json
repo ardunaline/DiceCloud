@@ -33,7 +33,6 @@
     "dagre": "^0.8.5",
     "date-fns": "^1.30.1",
     "ddp-rate-limiter-mixin": "^1.1.10",
-    "discord.js": "^12.5.3",
     "dompurify": "^2.4.5",
     "ignore": "^5.2.4",
     "ignore-styles": "^5.0.1",

@@ -37,6 +37,14 @@ RUN cd programs/server && npm install --production && npm prune --production \
   && apt-get autoremove -y \
   && rm -rf /var/lib/apt/lists/*
 
+# Bake the deployed version into the image at build time. The app uses this to
+# stamp creatures with computeVersion so they are only recomputed when the
+# computation engine actually changes. On Render, RENDER_GIT_COMMIT is provided
+# automatically; pass CONTAINER_VERSION=<git sha> with --build-arg elsewhere.
+ARG CONTAINER_VERSION
+ARG RENDER_GIT_COMMIT
+ENV CONTAINER_VERSION=${CONTAINER_VERSION:-$RENDER_GIT_COMMIT}
+
 ENV PORT=3000
 EXPOSE 3000
 

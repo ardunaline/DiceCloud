@@ -51,14 +51,22 @@ let CreatureLogSchema = new SimpleSchema({
 
 CreatureLogs.attachSchema(CreatureLogSchema);
 
+if (Meteor.isServer) {
+  // Compound index for the log publication: filter by creature, newest first
+  CreatureLogs._ensureIndex({ creatureId: 1, date: -1 });
+}
+
 function removeOldLogs(creatureId) {
   // Find the first log that is over the limit
-  let firstExpiredLog = CreatureLogs.find({
-    creatureId
+  let expiredLogs = CreatureLogs.find({
+    creatureId,
   }, {
     sort: { date: -1 },
     skip: PER_CREATURE_LOG_LIMIT,
-  });
+    limit: 1,
+    fields: { date: 1 },
+  }).fetch();
+  const firstExpiredLog = expiredLogs[0];
   if (!firstExpiredLog) return;
   // Remove all logs older than the one over the limit
   CreatureLogs.remove({
