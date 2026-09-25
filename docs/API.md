@@ -128,28 +128,32 @@ Public. `200 {"status": "ok"}` — proves the app and its DB connection are up.
 **Requires auth.** Lists creatures you own, read, or write. Use this to
 discover creature IDs.
 
-Response: array of:
+Response — publication results are wrapped by collection name:
+
 ```json
-{
-  "_id": "czGQuMhdD2EqTvM4H",
-  "name": "KSO's Fighter",
-  "type": "pc",            // pc | npc | monster
-  "public": false,
-  "owner": "Kv7KirFDYTp6W34f6",
-  "readers": [], "writers": [],
-  "avatarPicture": "…",
-  "denormalizedStats": {"xp": 0, "milestoneLevels": 0}
-}
+{"creatures": [
+  {
+    "_id": "czGQuMhdD2EqTvM4H",
+    "name": "KSO's Fighter",
+    "type": "pc",            // pc | npc | monster
+    "public": false,
+    "owner": "Kv7KirFDYTp6W34f6",
+    "readers": [], "writers": [],
+    "avatarPicture": "…",
+    "denormalizedStats": {"xp": 0, "milestoneLevels": 0}
+  }
+]}
 ```
 
 ### `GET /api/creature/:id`
 Public if the creature has `public: true`; otherwise requires Bearer token
 with view permission (owner/reader/writer/admin).
 
-Response: an object with the **creature document**, all its **properties**
-(the entire sheet: attributes, skills, items, effects, actions…), the
-computed **variables** (this is where final values live, e.g. `hp`,
-`strength`, skill modifiers), plus the owner's username.
+Response: a keyed object — `{"creatures": [<creature docs>],
+"creatureProperties": [<all properties>], "creatureVariables": [<variables>]}`.
+The **variables** are where final computed values live (e.g. `hp`,
+`strength`, skill modifiers); `creatureProperties` is the entire sheet:
+attributes, skills, items, effects, actions…
 
 Key fields on the creature document:
 `_id, name, type, owner, readers, writers, public, settings.discordWebhook,
@@ -160,10 +164,10 @@ Key shapes inside properties and variables are described in §6.
 
 ### `GET /api/creature/:id/log`
 Same permission rules as above. Returns the **20 most recent log entries**
-(newest first). **This is where roll results land.**
+(newest first) — **this is where roll results land**:
 
 ```json
-[
+{"creatureLogs": [
   {
     "_id": "LbYxPfdtmP3p8Jtijm",
     "creatureId": "czGQuMhdD2EqTvM4H",
@@ -174,7 +178,7 @@ Same permission rules as above. Returns the **20 most recent log entries**
       {"name": "To Hit", "value": "1d20 [ 18 ] +5\n**23**", "inline": true}
     ]
   }
-]
+]}
 ```
 
 `content[].value` is Markdown-ish text: dice rolls are shown as
@@ -440,8 +444,8 @@ REST instead of holding a websocket open.
 
 ```
 1. POST /api/login                      → {token}            (once, or)
-   POST /api/method/users.generateApiKey → apiKey            (once)
-2. GET  /api/creatures                  → find creatureId
+   POST /api/method/users.generateApiKey → {"result": "<apiKey>"} (once)
+2. GET  /api/creatures                  → find creatureId (wrapped: {"creatures": [...]})
 3. GET  /api/creature/:id               → find skill/action/attribute ids,
                                           read variables (hp, modifiers)
 4. POST /api/method/creatureProperties.doCheck
