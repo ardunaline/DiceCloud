@@ -18,7 +18,7 @@ See the final session report for details. In short:
    `computeVersion !== VERSION` — since it could never match, **every sheet
    load and every DDP reconnect blocked the server with a full recompute**
    of every subscribed character. Fixed in
-   `app/imports/api/engine/computeCreature.js`.
+   `app/imports/api/engine/computation/writeComputation/writeScope.js`.
 2. `Dockerfile` now bakes `CONTAINER_VERSION` (from `RENDER_GIT_COMMIT` /
    `--build-arg`) so the version stamp changes with each deploy.
 3. `removeOldLogs` never pruned old logs (cursor `.date` bug) — fixed +
@@ -63,7 +63,7 @@ the first hit after idle, same as Render's spin-up). If you change your
 mind and want zero cold starts for ~$5-7/mo, set `auto_stop_machines = false`
 and `min_machines_running = 1` in `fly.toml` before deploying.
 
-### 2.4 Set secrets
+### 2.5 Set secrets
 ```powershell
 fly secrets set \
   MONGO_URL="<atlas url>" \
@@ -74,9 +74,9 @@ fly secrets set \
 fly secrets set METEOR_SETTINGS='{"public":{"environment":"production","disablePatreon":true,"disallowCreatureApiImport":false}}'
 ```
 
-### 2.5 Deploy
+### 2.6 Deploy
 ```powershell
-.\scripts\fly-deploy.ps1 -AppName dicecloud-ardun -Region fra
+.\scripts\fly-deploy.ps1 -AppName dicecloud-ardun -Region bru
 ```
 The script passes `CONTAINER_VERSION=<git sha>` so creatures are recomputed
 once per engine change, then verifies.
