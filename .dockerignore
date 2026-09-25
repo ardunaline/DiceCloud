@@ -1,9 +1,10 @@
 app/node_modules
+node_modules
 .git
 .gitignore
 .cordova
 build
-.meteor/local
+**/.meteor/local
 .vscode
 .idea
 *.log
