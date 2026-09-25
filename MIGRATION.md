@@ -1,11 +1,17 @@
 # DiceCloud — Render → Fly.io Migration Guide
 
-Current setup: Dockerized Meteor app on **Render** (service wakes slowly when
-idle — measured 22–30 s cold start), MongoDB **Atlas**, domain
-`dice.ardun.me` proxied through **Cloudflare**.
+**STATUS: MIGRATED (2026-09-25).** `dice.ardun.me` is served by the Fly app
+`dicecloud-ardun` (region `ams`, 2 machines, auto-stop). Steps that differed
+from the plan below:
 
-The database does not move. Both Render and Fly talk to the same Atlas
-cluster, so the migration is: deploy to Fly → repoint DNS → retire Render.
+- `bru` (Brussels) is not offered for new Fly machines → used `ams`
+  (Amsterdam), ~5-10 ms from Atlas GCP europe-west1.
+- First deploy failed twice: build context had 340 MB of junk (`.dockerignore`
+  didn't match `app/.meteor/local`) and one corrupt-mode file broke
+  `archive/tar` — fixed by `.dockerignore` globs + deleting the stray file.
+- With Cloudflare **Proxied**, the Fly cert could not validate (Fly sees CF
+  edge IPs). Fix: toggle the record to **DNS-only** until the cert issued,
+  then switch the proxy back on.
 
 ---
 
