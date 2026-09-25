@@ -11,7 +11,7 @@
 #          Atlas in AWS us-east-1                 -> use "iad"
 
 app = "dicecloud-ardun"
-primary_region = "bru"
+primary_region = "ams"
 
 [build]
   dockerfile = "Dockerfile"
