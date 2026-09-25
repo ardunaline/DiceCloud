@@ -30,9 +30,12 @@ const authenticateMeteorUserByToken =
   };
 
 /**
- * Retrieves the ID of the Meteor.user that the given auth token belongs to
+ * Retrieves the ID of the Meteor.user that the given auth token belongs to.
+ * Accepts either:
+ *   - a Meteor login token (as returned by POST /api/login), or
+ *   - the user's stable apiKey (generated via the users.generateApiKey method)
  *
- * @param token An unhashed auth token
+ * @param token An unhashed auth token or apiKey
  * @returns {String} The ID of the authenticated Meteor.user, or null if token
  *     is invalid
  */
@@ -41,17 +44,23 @@ function getUserIdFromAuthToken(token) {
     return null;
   }
 
-  var user = Meteor.users.findOne({
+  let user = Meteor.users.findOne({
     'services.resume.loginTokens.hashedToken': Accounts._hashLoginToken(token),
   });
   if (user) {
     return user._id;
-  } else {
-    const error = new Meteor.Error('Permission denied',
-    'Invalid authentication token');
-    error.statusCode = 403;
-    throw error;
   }
+
+  // Stable API keys for long-lived programmatic clients (bots)
+  user = Meteor.users.findOne({ apiKey: token });
+  if (user) {
+    return user._id;
+  }
+
+  const error = new Meteor.Error('Permission denied',
+  'Invalid authentication token');
+  error.statusCode = 403;
+  throw error;
 }
 
 export default authenticateMeteorUserByToken;
