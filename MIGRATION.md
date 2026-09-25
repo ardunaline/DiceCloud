@@ -53,11 +53,15 @@ fly apps create dicecloud-ardun     # pick any unique name
 ```
 Open `fly.toml` and set `app = "dicecloud-ardun"`.
 
-**Pick the region** (`primary_region` in `fly.toml`) closest to your Atlas
-cluster *and* your players. Check the Atlas cluster's region in the Atlas
-dashboard (e.g. `AWS / eu-central-1` → use `fra`, `us-east-1` → `iad`,
-`eu-west-2` → `lhr`). A wrong region adds 100–300 ms to *every* database
-operation.
+**Region: Atlas is in GCP / Belgium (europe-west1)** → `primary_region` is
+already set to `bru` (Brussels) in `fly.toml`, which matches.
+
+### 2.4 Machine mode
+`fly.toml` currently uses **auto-stop** (machine sleeps when idle, Fly boots
+it on the next request — no charge while stopped, expect a ~15-30s wait on
+the first hit after idle, same as Render's spin-up). If you change your
+mind and want zero cold starts for ~$5-7/mo, set `auto_stop_machines = false`
+and `min_machines_running = 1` in `fly.toml` before deploying.
 
 ### 2.4 Set secrets
 ```powershell
@@ -120,14 +124,19 @@ JSON, and the site should load at `https://<app>.fly.dev`.
 
 ## Notes & costs
 
-- `fly.toml` runs **one always-on `shared-cpu-1x` machine with 1 GB RAM**
-  (`min_machines_running = 1`, `auto_stop_machines = false`). That's the
-  point: no cold starts, ever. Typical cost ≈ $5–7/month. If you'd rather
-  trade cold starts for idle savings, set `auto_stop_machines = true` — but
-  expect the same 20–30 s wake-up lag Render had.
+- `fly.toml` currently runs in **auto-stop** mode (per your preference): the
+  machine stops when idle and starts on the next request. While stopped you
+  pay only for the disk and a reserved IPv4 (~$2/mo); the tradeoff is a
+  ~15-30s wait on the first hit after idle. Flip to always-on
+  (`auto_stop_machines = false`, `min_machines_running = 1`) any time for
+  ~$5-7/mo total and zero cold starts.
 - Deploys use `--strategy immediate` (new machine goes live as soon as it's
   healthy; players stay connected).
 - If you see `mongo timeout` errors in `fly logs`, Atlas must allow
   connections from Fly's outbound IPs — Atlas "Network Access" with
   `0.0.0.0/0` (or Fly's static egress IPs via `fly ips allocate-v4` +
   dedicated IP config).
+- **If your Atlas cluster is the free M0 tier**: oplog access (needed for
+  `MONGO_OPLOG_URL` and instant log updates) requires a dedicated tier
+  (M10+). On M0 the app falls back to database polling — works, but roll
+  updates land up to a few hundred ms later.
