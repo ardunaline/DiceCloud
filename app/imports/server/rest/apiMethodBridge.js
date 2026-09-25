@@ -245,22 +245,26 @@ JsonRoutes.add('post', 'api/method/:name', function (req, res) {
     // Apply the same per-method DDP rate limits that a websocket client
     // would hit. The RateLimiterMixin only registers rules; Meteor's DDP
     // session does the increment, which we must replicate here.
-    const rateLimitResult = DDPRateLimiter.increment({
-      type: 'method',
-      name: methodName,
-      userId: req.userId,
-      connectionId: 'rest:' + identity,
-      clientAddress: ip,
-    });
-    if (!rateLimitResult.allowed) {
-      JsonRoutes.sendResult(res, {
-        code: 429,
-        data: {
-          error: 'too-many-requests',
-          reason: `Method rate limit exceeded, retry in ${Math.ceil(rateLimitResult.timeToReset / 1000)}s`,
-        },
+    // (Meteor <= 2.12 exposes _increment; newer versions export increment)
+    const increment = DDPRateLimiter.increment || DDPRateLimiter._increment;
+    if (typeof increment === 'function') {
+      const rateLimitResult = increment.call(DDPRateLimiter, {
+        type: 'method',
+        name: methodName,
+        userId: req.userId,
+        connectionId: 'rest:' + identity,
+        clientAddress: ip,
       });
-      return;
+      if (!rateLimitResult.allowed) {
+        JsonRoutes.sendResult(res, {
+          code: 429,
+          data: {
+            error: 'too-many-requests',
+            reason: `Method rate limit exceeded, retry in ${Math.ceil(rateLimitResult.timeToReset / 1000)}s`,
+          },
+        });
+        return;
+      }
     }
 
     const result = handler.call(invocation, args);
