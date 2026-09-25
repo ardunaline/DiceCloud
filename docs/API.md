@@ -45,7 +45,7 @@ Two credential types work as a Bearer token on every `/api/*` endpoint:
 | Credential | How to get it | Expires | Best for |
 |---|---|---|---|
 | **Login token** | `POST /api/login` with username/email + password | ~90 days, and the pool is capped (`limitLoginTokens`) — each new login can evict old tokens | Interactive scripts |
-| **API key** | Call method `users.generateApiKey` once (while authenticated), then read it from your user (it is also visible in the web app's account context) | Never (until regenerated) | **Bots / long-lived clients — recommended** |
+| **API key** | `POST /api/method/users.generateApiKey` (authenticated) → returns your key on the first call **and** on every later call | Never (until regenerated) | **Bots / long-lived clients — recommended** |
 
 Both are sent the same way:
 

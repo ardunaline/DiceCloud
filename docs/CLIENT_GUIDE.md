@@ -27,9 +27,11 @@ the bot `writer` access on exactly the characters it should control.
 
 ```
 1. POST /api/login  {"username": "my-bot", "password": "…"}   →  {token, id}
-2. POST /api/method/users.generateApiKey    (Authorization: Bearer <token>)
-3. Read the apiKey: it's shown in the web UI for the logged-in bot user
-   (the `user` DDP publication exposes it to its owner). Store it.
+2. POST /api/method/users.generateApiKey
+   Authorization: Bearer <token>
+   →  {"result": "<apiKey>"}     (same key returned on every later call)
+3. Store the apiKey — it never expires. Use it as the Bearer token for
+   everything afterwards.
 ```
 
 The **apiKey never expires** and doesn't evict login tokens — use it as the

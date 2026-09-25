@@ -134,9 +134,12 @@ Meteor.users.generateApiKey = new ValidatedMethod({
     if (Meteor.isClient) return;
     var user = Meteor.users.findOne(this.userId);
     if (!user) return;
-    if (user && user.apiKey) return;
+    // Return the existing key so the method doubles as a "read my key"
+    // for programmatic clients; generate one on first call
+    if (user && user.apiKey) return user.apiKey;
     var apiKey = Random.id(30);
     Meteor.users.update(this.userId, { $set: { apiKey } });
+    return apiKey;
   },
 });
 
